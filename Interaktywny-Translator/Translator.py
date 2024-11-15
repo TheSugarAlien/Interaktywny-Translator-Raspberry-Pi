@@ -61,6 +61,7 @@ def main():
     if target_language:
         translated_text, _ = translate_text(input_text, target_language)
         print(f"Przetłumaczony tekst: {translated_text}")
+        return translated_text, target_language
 
 
 if __name__ == "__main__":
