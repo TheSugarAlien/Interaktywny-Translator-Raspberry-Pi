@@ -109,3 +109,6 @@ venv/
 *.bat
 *.sh
 .idea
+
+test1.jpg
+output.mp3

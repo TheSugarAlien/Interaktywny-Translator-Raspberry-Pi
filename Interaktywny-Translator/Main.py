@@ -22,6 +22,21 @@ voice_ids = {
 CHUNK_SIZE = 1024
 
 
+def preprocess_image(image_path):
+    """Preprocess the image for better OCR."""
+    image = cv2.imread(image_path)
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+    denoised = cv2.medianBlur(binary, 3)
+
+    processed_path = "test1.jpg"
+    cv2.imwrite(processed_path, denoised)
+
+    return processed_path
+
 def capture_image():
     """Capture an image using the webcam."""
     cam = cv2.VideoCapture(0)
@@ -30,9 +45,16 @@ def capture_image():
     while True:
         _, image = cam.read()
         cv2.imshow('image', image)
-        if cv2.waitKey(1) & 0xFF == ord('s'):
-            cv2.imwrite('test1.jpg', image)
+        key = cv2.waitKey(0) & 0xFF
+        if key == ord("s"):
+            print("Saving image...")
+            cv2.imwrite("test1.jpg",frame)
             break
+        elif key == ord("r"):
+            print("Retaking image...")
+            continue
+
+
     cam.release()
     cv2.destroyAllWindows()
 
@@ -43,9 +65,20 @@ def image_to_text():
     """Convert an image to text using Tesseract OCR."""
     pytesseract.pytesseract.tesseract_cmd = tesseract_path
     myconf = r"-l pol+eng+deu+rus"
-    image_path = "test1.jpg"
-    text = pytesseract.image_to_string(Image.open(image_path), config=myconf)
+
+    # Preprocess the image
+    processed_path = preprocess_image("test1.jpg")
+
+    # Perform OCR
+    text = pytesseract.image_to_string(Image.open(processed_path), config=myconf)
     print(f"Extracted text: {text}")
+
+    # Ask the user if the text is correct
+    is_clear = input("Is this the text? (y/n) ")
+    if is_clear == "n":
+        capture_image()
+        image_to_text()
+
     return text
 
 
